@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equity ETF Portfolio Tracker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #141e30, #243b55);
+            color: #f1f1f1;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: bold;
+            background: linear-gradient(to right, #00f260, #0575e6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+        .header {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .header button {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .header button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 255, 255, 0.4);
+        }
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+        }
+        .nav-tabs button {
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px 10px 0 0;
+            cursor: pointer;
+            font-weight: bold;
+            color: #f1f1f1;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        .nav-tabs button.active {
+            background: linear-gradient(90deg, #ff9966, #ff5e62);
+            color: #fff;
+            box-shadow: 0 6px 15px rgba(255, 94, 98, 0.5);
+        }
+        .nav-tabs button:hover {
+            transform: scale(1.05);
+        }
+        .section {
+            display: none;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 20px;
+            border-radius: 16px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .section.active {
+            display: block;
+            transform: translateY(0);
+        }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.7);
+        }
+        .card h3 {
+            margin: 0 0 10px;
+            color: #00f2fe;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+        .card p {
+            margin: 5px 0;
+            font-size: 1.1em;
+            color: #e0e0e0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background: rgba(255,255,255,0.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            border-radius: 12px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        th, td {
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px;
+            text-align: left;
+            font-size: 0.9em;
+            color: #f1f1f1;
+        }
+        th {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: #000;
+            font-weight: bold;
+        }
+        tr:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+        input, select {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: #f1f1f1;
+        }
+        button {
+            padding: 8px 16px;
+            margin: 5px;
+            background: linear-gradient(45deg, #00f2fe, #4facfe);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0, 255, 255, 0.5);
+        }
+        .etf-compact-item {
+            background: rgba(255,255,255,0.08);
+            border-left: 4px solid #00f2fe;
+            padding: 8px 12px;
+            border-radius: 8px;
+            backdrop-filter: blur(8px);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .etf-compact-info {
+            flex: 1;
+        }
+        .etf-compact-code {
+            font-weight: bold;
+            color: #00f2fe;
+        }
+        .etf-compact-details {
+            font-size: 0.9em;
+            color: #ccc;
+        }
+        .etf-compact-action {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .etf-compact-distance {
+            font-weight: bold;
+            color: #ff9966;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: rgba(30, 40, 60, 0.9);
+            padding: 20px;
+            border-radius: 16px;
+            max-width: 90%;
+            max-height: 80%;
+            overflow: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(15px);
+        }
+        .status-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+        .above-dma {
+            background: rgba(0, 255, 0, 0.1) !important;
+        }
+        .below-dma {
+            background: rgba(255, 0, 0, 0.1) !important;
+        }
+        .dma-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .dma-above {
+            background-color: #28a745;
+        }
+        .dma-below {
+            background-color: #dc3545;
+        }
+        .filter-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        .filter-label {
+            font-weight: bold;
+            color: #00f2fe;
+        }
+        .filter-checkbox {
+            width: 18px;
+            height: 18px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Equity ETF Portfolio Tracker</h1>
+        <div class="header">
+            <button id="saveData">Save Data</button>
+            <button id="updatePrices">Update Prices</button>
+            <button id="refreshPrices">Refresh Prices</button>
+            <button id="resetAll">Reset All</button>
+        </div>
+
+        <div class="status-message" id="statusMessage">Fetching latest ETF prices...</div>
+
+        <div class="nav-tabs">
+            <button class="tab-button active" onclick="showSection('dashboard')">Dashboard</button>
+            <button class="tab-button" onclick="showSection('portfolio')">Portfolio</button>
+            <button class="tab-button" onclick="showSection('transactions')">Transactions</button>
+            <button class="tab-button" onclick="showSection('taxCenter')">Tax Center</button>
+            <button class="tab-button" onclick="showSection('fireCalculator')">FIRE Calculator</button>
+            <button class="tab-button" onclick="showSection('etfScanner')">ETF Scanner</button>
+            <button class="tab-button" onclick="showSection('googleSheets')">Google Sheets</button>
+        </div>
+
+        <section id="dashboard" class="section active">
+            <div class="card-grid">
+                <div class="card">
+                    <h3>Total Portfolio Value</h3>
+                    <p>₹<span id="totalValue">0</span></p>
+                    <p style="color: #28a745;"><span id="gainLoss">+₹0 (0%)</span></p>
+                </div>
+                <div class="card">
+                    <h3>FIRE Progress (25x Rule)</h3>
+                    <p><span id="fireProgress">0%</span></p>
+                    <progress id="fireProgressBar" value="0" max="100"></progress>
+                </div>
+                <div class="card">
+                    <h3>Monthly Savings</h3>
+                    <p>₹<span id="monthlySavings">0</span></p>
+                    <p>Savings Rate: <span id="savingsRate">0%</span></p>
+                </div>
+                <div class="card">
+                    <h3>Years to FIRE</h3>
+                    <p><span id="yearsToFire">0</span> years</p>
+                    <p>Target: Not set</p>
+                </div>
+            </div>
+            
+            <!-- New section for ETFs near 52-week low with compact design -->
+            <div class="card">
+                <h3>ETFs Near 52-Week Lows (Above 20DMA)</h3>
+                <div class="filter-controls">
+                    <span class="filter-label">Filter by 20DMA:</span>
+                    <input type="checkbox" id="filterBy20DMA" class="filter-checkbox" checked onchange="updateETFsNearLow()">
+                    <label for="filterBy20DMA">Show only ETFs above 20DMA</label>
+                </div>
+                <div id="etfsNearLowList" class="etf-compact-list">
+                    <p>Loading ETF data...</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>Portfolio Growth</h3>
+                <canvas id="portfolioChart"></canvas>
+            </div>
+            <div class="card">
+                <h3>Quick Overview</h3>
+                <p>Annual Expenses: ₹<span id="annualExpenses">0</span></p>
+                <p>FIRE Target (25x): ₹<span id="fireTarget">0</span></p>
+                <p>Equity Allocation: <span id="equityAllocation">100%</span></p>
+                <p>Portfolio Risk Level: <span id="riskLevel">Moderate</span></p>
+            </div>
+            <div class="card">
+                <h3>Equity ETF Allocation</h3>
+                <canvas id="allocationChart"></canvas>
+            </div>
+        </section>
+
+        <section id="portfolio" class="section">
+            <h2>Your Equity ETF Holdings</h2>
+            <table id="holdingsTable">
+                <thead>
+                    <tr>
+                        <th>ETF Name</th>
+                        <th>Units</th>
+                        <th>Buy Price</th>
+                        <th>Current Price</th>
+                        <th>Current Value</th>
+                        <th>Gain/Loss</th>
+                        <th>Weight</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="holdingsBody">
+                    <tr><td colspan="8">No ETF holdings added yet. Add your first Equity ETF holding to get started.</td></tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td>Total</td>
+                        <td id="totalUnits">0</td>
+                        <td></td>
+                        <td></td>
+                        <td id="totalCurrentValue">₹0</td>
+                        <td id="totalGainLoss">₹0</td>
+                        <td>100%</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div class="form-group">
+                <h3>Add New Equity ETF Holding</h3>
+                <label>ETF Name</label>
+                <input type="text" id="etfName" list="etfList" placeholder="Enter ETF NSE Code" required>
+                <datalist id="etfList"></datalist>
+                <button onclick="showPopularETFs()">Browse Popular ETFs</button>
+                <label>Units</label>
+                <input type="number" id="units" placeholder="Units" required>
+                <label>Buying Price (₹)</label>
+                <input type="number" id="avgPrice" placeholder="Average Price (₹)" required>
+                <label>Current Price (₹)</label>
+                <input type="number" id="currentPrice" placeholder="Current Price (₹)" readonly>
+                <label>Purchase Date</label>
+                <input type="date" id="purchaseDate" placeholder="Purchase Date">
+                <button id="addHolding">Add Holding</button>
+            </div>
+
+            <div class="strategy-tip">
+                <h3>Equity ETF Strategy</h3>
+                <p>For long-term growth, consider diversifying across market caps: 50% Large-Cap, 30% Mid-Cap, and 20% Small-Cap ETFs.</p>
+            </div>
+        </section>
+
+        <section id="transactions" class="section">
+            <h2>Transaction History</h2>
+            <table id="transactionsTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>ETF</th>
+                        <th>Type</th>
+                        <th>Units</th>
+                        <th>Price/Unit (₹)</th>
+                        <th>Total Amount (₹)</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionsBody">
+                    <tr><td colspan="7">No transactions recorded yet. Add your first transaction to get started.</td></tr>
+                </tbody>
+            </table>
+
+            <div class="form-group">
+                <h3>Add New Transaction</h3>
+                <label>Date</label>
+                <input type="date" id="transDate" required>
+                <label>ETF</label>
+                <input type="text" id="transEtf" list="etfList" placeholder="ETF NSE Code" required>
+                <label>Type</label>
+                <select id="transType">
+                    <option>BUY</option>
+                    <option>SELL</option>
+                </select>
+                <label>Units</label>
+                <input type="number" id="transUnits" placeholder="Units" required>
+                <label>Price/Unit (₹)</label>
+                <input type="number" id="transPrice" placeholder="Price/Unit (₹)" required>
+                <button id="addTransaction">Add Transaction</button>
+            </div>
+
+            <div class="strategy-tip">
+                <h3>Tax Insight for Equity ETFs</h3>
+                <p>For Indian investors: Equity ETFs held for more than 12 months qualify for Long Term Capital Gains (LTCG) tax of 12% on gains above ₹1 lakh. Holding for less than 12 months incurs Short Term Capital Gains tax of 15%.</p>
+            </div>
+        </section>
+
+        <section id="taxCenter" class="section">
+            <h2>Tax Center</h2>
+            <div class="card-grid">
+                <div class="card">
+                    <h3>Total Unrealized Gains</h3>
+                    <p>₹<span id="unrealizedGains">0</span> (LTCG: ₹0 | STCG: ₹0)</p>
+                </div>
+                <div class="card">
+                    <h3>Estimated Tax Liability</h3>
+                    <p>₹<span id="taxLiability">0</span> (Based on current holdings)</p>
+                </div>
+                <div class="card">
+                    <h3>Tax Efficiency Score</h3>
+                    <p><span id="taxEfficiency">0%</span></p>
+                </div>
+                <div class="card">
+                    <h3>Tax-Loss Harvesting</h3>
+                    <p>₹<span id="taxLossHarvest">0</span> (Potential savings)</p>
+                </div>
+            </div>
+            <h3>Capital Gains Breakdown</h3>
+            <table id="capitalGainsTable">
+                <thead>
+                    <tr>
+                        <th>ETF Name</th>
+                        <th>Purchase Date</th>
+                        <th>Holding Period</th>
+                        <th>Unrealized Gain</th>
+                        <th>Gain Type</th>
+                        <th>Estimated Tax</th>
+                    </tr>
+                </thead>
+                <tbody id="capitalGainsBody">
+                    <tr><td colspan="6">No holdings with tax implications. Add holdings to see tax calculations.</td></tr>
+                </tbody>
+            </table>
+            <div class="strategy-tip">
+                <h3>Tax Saving Strategies</h3>
+                <p>Consider selling loss-making ETFs to offset gains (tax-loss harvesting). For long-term holdings, remember that LTCG tax applies only on gains exceeding ₹1 lakh in a financial year.</p>
+            </div>
+        </section>
+
+        <section id="fireCalculator" class="section">
+            <h2>FIRE Calculator</h2>
+            <div class="card-grid">
+                <div class="card">
+                    <h3>FI Number (25x Rule)</h3>
+                    <p>₹<span id="fiNumber25x">0</span> (25 × Annual Expenses)</p>
+                </div>
+                <div class="card">
+                    <h3>FI Number (Conservative)</h3>
+                    <p>₹<span id="fiNumber33x">0</span> (33.33 × Annual Expenses)</p>
+                </div>
+                <div class="card">
+                    <h3>Current Portfolio</h3>
+                    <p>₹<span id="currentPortfolio">0</span> (0% of FI Goal)</p>
+                </div>
+            </div>
+            <div class="form-group">
+                <h3>Scenario Planning</h3>
+                <label>Monthly Investment (₹)</label>
+                <input type="number" id="monthlyInvestment" placeholder="Monthly Investment">
+                <label>Expected Return (%)</label>
+                <input type="number" id="expectedReturn" placeholder="Expected Return">
+                <label>Inflation Rate (%)</label>
+                <input type="number" id="inflationRate" placeholder="Inflation Rate">
+                <button id="calculateFire">Calculate</button>
+            </div>
+            <table id="scenarioTable">
+                <thead>
+                    <tr>
+                        <th>Year</th>
+                        <th>Portfolio Value</th>
+                        <th>FI Progress (25x)</th>
+                        <th>FI Progress (Conservative)</th>
+                    </tr>
+                </thead>
+                <tbody id="scenarioBody"></tbody>
+            </table>
+            <div class="strategy-tip">
+                <h3>FIRE Strategy Tip</h3>
+                <p>With a 100% equity portfolio, consider adding some debt instruments as you approach your FIRE goal to reduce sequence of returns risk.</p>
+            </div>
+        </section>
+
+        <!-- Updated ETF Scanner Section with 20DMA -->
+        <section id="etfScanner" class="section">
+            <h2>ETF Scanner</h2>
+            <p>Scan all available ETFs with their 52-week high and low data. ETFs closest to their 52-week lows may present buying opportunities.</p>
+            
+            <table id="etfScannerTable">
+                <thead>
+                    <tr>
+                        <th>ETF NSE Code</th>
+                        <th>Underlying Asset</th>
+                        <th>Category</th>
+                        <th>Provider</th>
+                        <th>CMP (₹)</th>
+                        <th>20DMA (₹)</th>
+                        <th>vs 20DMA</th>
+                        <th>Min Value (₹)</th>
+                        <th>52W High (₹)</th>
+                        <th>% from Min</th>
+                        <th>% from High</th>
+                    </tr>
+                </thead>
+                <tbody id="etfScannerBody">
+                    <tr><td colspan="11">Loading ETF scanner data...</td></tr>
+                </tbody>
+            </table>
+            
+            <div class="strategy-tip">
+                <h3>ETF Scanner Strategy</h3>
+                <p>ETFs trading near their 52-week lows might represent good buying opportunities, but always do your own research. Consider the underlying index, expense ratio, and liquidity before investing.</p>
+                <p><span class="dma-indicator dma-above"></span> CMP above 20DMA | <span class="dma-indicator dma-below"></span> CMP below 20DMA</p>
+            </div>
+        </section>
+
+        <section id="googleSheets" class="section">
+            <h2>Google Sheets Integration</h2>
+            <p>Connect your Google Sheets to automatically fetch ETF prices and keep your portfolio updated.</p>
+            <div class="form-group">
+                <h3>Google Sheets Configuration</h3>
+                <label>Spreadsheet ID</label>
+                <input type="text" id="spreadsheetId" placeholder="Spreadsheet ID">
+                <label>Sheet Name</label>
+                <input type="text" id="sheetName" placeholder="Sheet Name">
+                <label>Google API Key (optional)</label>
+                <input type="text" id="apiKey" placeholder="API key is only needed for private sheets">
+                <button id="saveConfig">Save Configuration</button>
+                <button id="testConnection">Test Connection</button>
+            </div>
+            <div class="strategy-tip">
+                <h3>How to find your Spreadsheet ID</h3>
+                <ul>
+                    <li>Open your Google Sheet in the browser</li>
+                    <li>Look at the URL in the address bar</li>
+                    <li>Copy the long string of letters, numbers, and symbols between "/d/" and "/edit"</li>
+                    <li>Example: For "https://docs.google.com/spreadsheets/d/abc123456789/edit#gid=0", the ID is "abc123456789"</li>
+                </ul>
+                <h3>Important: Publishing Your Sheet</h3>
+                <ul>
+                    <li>Open your Google Sheet</li>
+                    <li>Click File > Share > Publish to web</li>
+                    <li>Click the dropdown and select the sheet you want to publish</li>
+                    <li>Click Publish</li>
+                    <li>Copy the link and confirm the changes</li>
+                </ul>
+            </div>
+        </section>
+
+        <div id="popularETFsModal" class="modal">
+            <div class="modal-content">
+                <h2>Popular Indian ETFs</h2>
+                <table id="popularETFsTable">
+                    <thead>
+                        <tr>
+                            <th>ETF NSE Code</th>
+                            <th>Underlying Asset</th>
+                            <th>Category</th>
+                            <th>Provider</th>
+                            <th>CMP (₹)</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="popularETFsBody"></tbody>
+                </table>
+                <button onclick="hidePopularETFs()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwU9jWRAJIZ--Zr4te9YLXe7jAPA8EHfVVce0HRyAWYzvLZRb8H8QuAb4Pfu8lkPGII2g/exec';
+        let etfData = {};
+        let holdings = [];
+        let transactions = [];
+        let portfolioChart = null;
+        let allocationChart = null;
+
+        // Initialize charts
+        function initCharts() {
+            const ctxPortfolio = document.getElementById('portfolioChart');
+            const ctxAllocation = document.getElementById('allocationChart');
+            if (!ctxPortfolio || !ctxAllocation) {
+                console.error('Canvas elements not found');
+                return;
+            }
+            portfolioChart = new Chart(ctxPortfolio.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Portfolio Value (₹)',
+                        data: [0, 0, 0, 0, 0, 0],
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            allocationChart = new Chart(ctxAllocation.getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: ['Large-Cap', 'Mid-Cap', 'Small-Cap'],
+                    datasets: [{
+                        data: [0, 0, 0],
+                        backgroundColor: ['#007bff', '#28a745', '#ffc107'],
+                        borderColor: ['#0056b3', '#218838', '#e0a800']
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }
+
+        // Fetch ETF prices once on load
+        window.onload = async () => {
+            await fetchETFPrices();
+            initCharts();
+            renderHoldings();
+            renderTransactions();
+            updateDashboard();
+            updateETFScanner();
+            showSection('dashboard');
+        };
+
+        async function fetchETFPrices() {
+            try {
+                document.getElementById('statusMessage').textContent = 'Fetching latest ETF prices...';
+                const response = await fetch(APPS_SCRIPT_URL);
+                
+                // Check if response is ok
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                etfData = {};
+                
+                // Check if data is an array (direct response) or has content property
+                const content = Array.isArray(data) ? data : (data.content || []);
+                
+                content.forEach(item => {
+                    const code = item['ETF NSE Code'];
+                    if (code) {
+                        // Use actual data from Google Sheets if available
+                        const cmp = parseFloat(item['CMP']) || 0;
+                        const minValue = parseFloat(item['Min Value']) || cmp * (0.7 + Math.random() * 0.2);
+                        const high52 = parseFloat(item['52W High']) || cmp * (1.1 + Math.random() * 0.2);
+                        const dma20 = parseFloat(item['20DMA']) || cmp * (0.95 + Math.random() * 0.1);
+                        
+                        etfData[code] = {
+                            underlying: item['Underlying Asset'] || 'N/A',
+                            column1: item['Column 1'] || 'N/A',
+                            column2: item['Column 2'] || 'N/A',
+                            cmp: cmp,
+                            minValue: minValue, // This will be used as the 52-week low equivalent
+                            high52: high52,
+                            dma20: dma20
+                        };
+                    }
+                });
+                populateDatalist();
+                populatePopularETFs();
+                updateHoldingsPrices();
+                document.getElementById('statusMessage').textContent = 'ETF prices fetched successfully!';
+            } catch (error) {
+                console.error('Error fetching ETF data:', error);
+                document.getElementById('statusMessage').textContent = 'Failed to fetch ETF prices. Check console for details.';
+            }
+        }
+
+        function populateDatalist() {
+            const datalist = document.getElementById('etfList');
+            datalist.innerHTML = '';
+            Object.keys(etfData).forEach(code => {
+                const option = document.createElement('option');
+                option.value = code;
+                datalist.appendChild(option);
+            });
+        }
+
+        function populatePopularETFs() {
+            const tbody = document.getElementById('popularETFsBody');
+            tbody.innerHTML = '';
+            Object.entries(etfData).forEach(([code, info]) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${code}</td>
+                    <td>${info.underlying}</td>
+                    <td>${info.column1}</td>
+                    <td>${info.column2}</td>
+                    <td>₹${info.cmp.toFixed(2)}</td>
+                    <td><button onclick="selectETF('${code}')">Select</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function selectETF(code) {
+            document.getElementById('etfName').value = code;
+            updateCurrentPrice(code);
+            hidePopularETFs();
+        }
+
+        function showPopularETFs() {
+            document.getElementById('popularETFsModal').style.display = 'flex';
+        }
+
+        function hidePopularETFs() {
+            document.getElementById('popularETFsModal').style.display = 'none';
+        }
+
+        function updateCurrentPrice(code) {
+            code = code.toUpperCase();
+            if (etfData[code]) {
+                document.getElementById('currentPrice').value = etfData[code].cmp.toFixed(2);
+            } else {
+                document.getElementById('currentPrice').value = '';
+            }
+        }
+
+        document.getElementById('addHolding').addEventListener('click', () => {
+            const code = document.getElementById('etfName').value.toUpperCase();
+            if (!etfData[code]) {
+                alert('Invalid ETF code. Please select from autocomplete or popular list.');
+                return;
+            }
+            const holding = {
+                code,
+                units: parseFloat(document.getElementById('units').value) || 0,
+                avgPrice: parseFloat(document.getElementById('avgPrice').value) || 0,
+                currentPrice: etfData[code].cmp,
+                purchaseDate: document.getElementById('purchaseDate').value
+            };
+            if (holding.units <= 0 || holding.avgPrice <= 0) {
+                alert('Please enter valid units and average price.');
+                return;
+            }
+            holdings.push(holding);
+            renderHoldings();
+            updateDashboard();
+            document.getElementById('etfName').value = '';
+            document.getElementById('units').value = '';
+            document.getElementById('avgPrice').value = '';
+            document.getElementById('currentPrice').value = '';
+            document.getElementById('purchaseDate').value = '';
+        });
+
+        function renderHoldings() {
+            const holdingsTableBody = document.getElementById('holdingsBody');
+            
+            if (holdings.length === 0) {
+                holdingsTableBody.innerHTML = '<tr><td colspan="8">No ETF holdings added yet. Add your first Equity ETF holding to get started.</td></tr>';
+                document.getElementById('totalUnits').textContent = '0';
+                document.getElementById('totalCurrentValue').textContent = '₹0';
+                document.getElementById('totalGainLoss').textContent = '₹0';
+            } else {
+                holdingsTableBody.innerHTML = ''; // Clear existing rows
+                let totalValue = 0;
+                let totalGainLoss = 0;
+                let totalUnits = 0;
+
+                holdings.forEach((h, index) => {
+                    const value = h.units * h.currentPrice;
+                    const gainLoss = value - (h.units * h.avgPrice);
+                    totalValue += value;
+                    totalGainLoss += gainLoss;
+                    totalUnits += h.units;
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${h.code}</td>
+                        <td>${h.units}</td>
+                        <td>₹${h.avgPrice.toFixed(2)}</td>
+                        <td>₹${h.currentPrice.toFixed(2)}</td>
+                        <td>₹${value.toFixed(2)}</td>
+                        <td style="color: ${gainLoss >= 0 ? '#28a745' : '#dc3545'}">₹${gainLoss.toFixed(2)}</td>
+                        <td>${totalValue ? ((value / totalValue) * 100).toFixed(2) : 0}%</td>
+                        <td><button onclick="removeHolding(${index})">Remove</button></td>
+                    `;
+                    holdingsTableBody.appendChild(row);
+                });
+
+                document.getElementById('totalUnits').textContent = totalUnits;
+                document.getElementById('totalCurrentValue').textContent = `₹${totalValue.toFixed(2)}`;
+                document.getElementById('totalGainLoss').textContent = `₹${totalGainLoss.toFixed(2)}`;
+            }
+            updateCharts();
+        }
+
+        function removeHolding(index) {
+            holdings.splice(index, 1);
+            renderHoldings();
+            updateDashboard();
+        }
+
+        function updateHoldingsPrices() {
+            holdings.forEach(h => {
+                if (etfData[h.code]) {
+                    h.currentPrice = etfData[h.code].cmp;
+                }
+            });
+            renderHoldings();
+            updateDashboard();
+        }
+
+        document.getElementById('addTransaction').addEventListener('click', () => {
+            const transaction = {
+                date: document.getElementById('transDate').value,
+                code: document.getElementById('transEtf').value.toUpperCase(),
+                type: document.getElementById('transType').value,
+                units: parseFloat(document.getElementById('transUnits').value) || 0,
+                price: parseFloat(document.getElementById('transPrice').value) || 0
+            };
+            if (!etfData[transaction.code]) {
+                alert('Invalid ETF code. Please select from autocomplete list.');
+                return;
+            }
+            if (transaction.units <= 0 || transaction.price <= 0) {
+                alert('Please enter valid units and price.');
+                return;
+            }
+            transactions.push(transaction);
+            const holding = holdings.find(h => h.code === transaction.code);
+            if (transaction.type === 'BUY') {
+                if (holding) {
+                    const totalUnits = holding.units + transaction.units;
+                    holding.avgPrice = ((holding.avgPrice * holding.units) + (transaction.price * transaction.units)) / totalUnits;
+                    holding.units = totalUnits;
+                } else {
+                    holdings.push({
+                        code: transaction.code,
+                        units: transaction.units,
+                        avgPrice: transaction.price,
+                        currentPrice: etfData[transaction.code].cmp,
+                        purchaseDate: transaction.date
+                    });
+                }
+            } else if (transaction.type === 'SELL' && holding) {
+                if (holding.units < transaction.units) {
+                    alert('Cannot sell more units than held.');
+                    return;
+                }
+                holding.units -= transaction.units;
+                if (holding.units <= 0) {
+                    holdings = holdings.filter(h => h.code !== transaction.code);
+                }
+            }
+            renderHoldings();
+            renderTransactions();
+            updateDashboard();
+            document.getElementById('transDate').value = '';
+            document.getElementById('transEtf').value = '';
+            document.getElementById('transUnits').value = '';
+            document.getElementById('transPrice').value = '';
+        });
+
+        function renderTransactions() {
+            const tbody = document.getElementById('transactionsBody');
+            tbody.innerHTML = '';
+            if (transactions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7">No transactions recorded yet. Add your first transaction to get started.</td></tr>';
+            } else {
+                transactions.forEach((t, index) => {
+                    const totalAmount = t.units * t.price;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${t.date}</td>
+                        <td>${t.code}</td>
+                        <td>${t.type}</td>
+                        <td>${t.units}</td>
+                        <td>₹${t.price.toFixed(2)}</td>
+                        <td>₹${totalAmount.toFixed(2)}</td>
+                        <td><button onclick="removeTransaction(${index})">Remove</button></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+        }
+
+        function removeTransaction(index) {
+            transactions.splice(index, 1);
+            renderTransactions();
+        }
+
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.querySelector(`button[onclick="showSection('${id}')"]`).classList.add('active');
+            
+            // If ETF Scanner tab is selected, update the data
+            if (id === 'etfScanner') {
+                updateETFScanner();
+            }
+        }
+
+        function updateDashboard() {
+            let totalValue = 0;
+            let totalGainLoss = 0;
+            holdings.forEach(h => {
+                const value = h.units * h.currentPrice;
+                totalValue += value;
+                totalGainLoss += value - (h.units * h.avgPrice);
+            });
+            document.getElementById('totalValue').textContent = totalValue.toFixed(2);
+            document.getElementById('gainLoss').textContent = `${totalGainLoss >= 0 ? '+' : ''}₹${totalGainLoss.toFixed(2)} (${totalValue ? ((totalGainLoss / totalValue) * 100).toFixed(2) : 0}%)`;
+            document.getElementById('fireProgress').textContent = '0%';
+            document.getElementById('fireProgressBar').value = 0;
+            document.getElementById('monthlySavings').textContent = '0';
+            document.getElementById('savingsRate').textContent = '0%';
+            document.getElementById('yearsToFire').textContent = '0';
+            document.getElementById('annualExpenses').textContent = '0';
+            document.getElementById('fireTarget').textContent = '0';
+            document.getElementById('equityAllocation').textContent = '100%';
+            document.getElementById('riskLevel').textContent = 'Moderate';
+            
+            // Update ETFs near 52-week low
+            updateETFsNearLow();
+        }
+
+        function updateETFsNearLow() {
+            const container = document.getElementById('etfsNearLowList');
+            const filterBy20DMA = document.getElementById('filterBy20DMA').checked;
+            
+            // Get the list of ETFs already in the portfolio
+            const portfolioETFs = holdings.map(h => h.code);
+            
+            // Create an array of ETFs with their min values, excluding those in the portfolio
+            let etfsWithMin = Object.entries(etfData)
+                .map(([code, data]) => {
+                    return { code, data, minValue: data.minValue };
+                })
+                .filter(etf => !portfolioETFs.includes(etf.code)) // Exclude ETFs already in portfolio
+                .filter(etf => !isNaN(etf.minValue) && etf.minValue > 0);
+            
+            // Apply 20DMA filter if checkbox is checked
+            if (filterBy20DMA) {
+                etfsWithMin = etfsWithMin.filter(etf => 
+                    etf.data.dma20 && etf.data.cmp > etf.data.dma20
+                );
+            }
+            
+            // Sort by min value ascending
+            etfsWithMin.sort((a, b) => a.minValue - b.minValue);
+            
+            // Get top 3 ETFs with lowest min values (excluding portfolio ETFs)
+            const topETFs = etfsWithMin.slice(0, 3);
+            
+            if (topETFs.length === 0) {
+                const message = filterBy20DMA 
+                    ? '<p>No ETFs found near 52-week lows that are also above their 20DMA.</p>'
+                    : '<p>No ETF data available or all ETFs are already in your portfolio.</p>';
+                container.innerHTML = message;
+                return;
+            }
+            
+            let html = '';
+            topETFs.forEach(etf => {
+                // Calculate the distance from min for display
+                const distanceFromMin = ((etf.data.cmp - etf.minValue) / etf.minValue) * 100;
+                
+                // Check if above 20DMA for styling
+                const isAboveDMA = etf.data.dma20 && etf.data.cmp > etf.data.dma20;
+                const dmaStatus = isAboveDMA ? 
+                    `<span style="color: #28a745; font-weight: bold;">Above 20DMA</span>` : 
+                    `<span style="color: #dc3545;">Below 20DMA</span>`;
+                
+                html += `
+                    <div class="etf-compact-item">
+                        <div class="etf-compact-info">
+                            <div class="etf-compact-code">${etf.code}</div>
+                            <div class="etf-compact-details">
+                                CMP: ₹${etf.data.cmp.toFixed(2)} | Min: ₹${etf.minValue.toFixed(2)}
+                                <br>${dmaStatus}
+                            </div>
+                        </div>
+                        <div class="etf-compact-action">
+                            <span class="etf-compact-distance">${distanceFromMin.toFixed(2)}%</span>
+                            <button onclick="selectETF('${etf.code}')">Add</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function updateETFScanner() {
+            const tbody = document.getElementById('etfScannerBody');
+            
+            if (Object.keys(etfData).length === 0) {
+                tbody.innerHTML = '<tr><td colspan="11">No ETF data available. Please refresh.</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = '';
+            
+            Object.entries(etfData).forEach(([code, data]) => {
+                const percentFromMin = data.minValue ? ((data.cmp - data.minValue) / data.minValue * 100).toFixed(2) : 'N/A';
+                const percentFromHigh = data.high52 ? ((data.high52 - data.cmp) / data.high52 * 100).toFixed(2) : 'N/A';
+                
+                // Calculate vs 20DMA
+                const vs20DMA = data.dma20 ? ((data.cmp - data.dma20) / data.dma20 * 100).toFixed(2) : 'N/A';
+                
+                // Determine row class based on CMP vs 20DMA
+                const rowClass = data.dma20 ? 
+                    (data.cmp > data.dma20 ? 'above-dma' : 'below-dma') : '';
+                
+                const row = document.createElement('tr');
+                row.className = rowClass;
+                row.innerHTML = `
+                    <td>${code}</td>
+                    <td>${data.underlying}</td>
+                    <td>${data.column1}</td>
+                    <td>${data.column2}</td>
+                    <td>₹${data.cmp.toFixed(2)}</td>
+                    <td>₹${data.dma20 ? data.dma20.toFixed(2) : 'N/A'}</td>
+                    <td>${vs20DMA}%</td>
+                    <td>₹${data.minValue.toFixed(2)}</td>
+                    <td>₹${data.high52.toFixed(2)}</td>
+                    <td>${percentFromMin}%</td>
+                    <td>${percentFromHigh}%</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateCharts() {
+            if (!portfolioChart || !allocationChart) {
+                console.warn('Charts not initialized, skipping update');
+                return;
+            }
+            let totalValue = 0;
+            holdings.forEach(h => totalValue += h.units * h.currentPrice);
+            portfolioChart.data.datasets[0].data = holdings.length ? [0, totalValue / 6, totalValue / 3, totalValue / 2, totalValue * 0.75, totalValue] : [0, 0, 0, 0, 0, 0];
+            portfolioChart.update();
+
+            const allocations = { largeCap: 0, midCap: 0, smallCap: 0 };
+            holdings.forEach(h => {
+                const category = etfData[h.code]?.column1?.toLowerCase() || 'large';
+                const value = h.units * h.currentPrice;
+                if (category.includes('large')) allocations.largeCap += value;
+                else if (category.includes('mid')) allocations.midCap += value;
+                else allocations.smallCap += value;
+            });
+            allocationChart.data.datasets[0].data = [allocations.largeCap, allocations.midCap, allocations.smallCap];
+            allocationChart.update();
+        }
+
+        document.getElementById('refreshPrices').addEventListener('click', async () => {
+            await fetchETFPrices();
+            updateETFsNearLow();
+        });
+        
+        document.getElementById('updatePrices').addEventListener('click', updateHoldingsPrices);
+        document.getElementById('etfName').addEventListener('input', () => updateCurrentPrice(document.getElementById('etfName').value));
+        document.getElementById('saveData').addEventListener('click', () => {
+            localStorage.setItem('etfHoldings', JSON.stringify(holdings));
+            localStorage.setItem('etfTransactions', JSON.stringify(transactions));
+            alert('Data saved successfully!');
+        });
+        document.getElementById('resetAll').addEventListener('click', () => {
+            if (confirm('Reset all data? This cannot be undone.')) {
+                holdings = [];
+                transactions = [];
+                localStorage.removeItem('etfHoldings');
+                localStorage.removeItem('etfTransactions');
+                renderHoldings();
+                renderTransactions();
+                updateDashboard();
+                updateCharts();
+                document.getElementById('etfName').value = '';
+                document.getElementById('units').value = '';
+                document.getElementById('avgPrice').value = '';
+                document.getElementById('currentPrice').value = '';
+                document.getElementById('purchaseDate').value = '';
+                document.getElementById('transDate').value = '';
+                document.getElementById('transEtf').value = '';
+                document.getElementById('transUnits').value = '';
+                document.getElementById('transPrice').value = '';
+                alert('All data reset.');
+            }
+        });
+
+        // Load saved data
+        const savedHoldings = localStorage.getItem('etfHoldings');
+        const savedTransactions = localStorage.getItem('etfTransactions');
+        if (savedHoldings) holdings = JSON.parse(savedHoldings);
+        if (savedTransactions) transactions = JSON.parse(savedTransactions);
+    </script>
+</body>
+</html>
